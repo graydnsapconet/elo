@@ -1,0 +1,7 @@
+services:
+  pool_rating_api:
+    build: ./app
+    ports:
+      - "192.168.1.248:4215:5000"
+    volumes:
+      - ./app:/app
