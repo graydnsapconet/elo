@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Challenge Players</title>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>Challenge Players</h2>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <ul class="flash-messages">
+                        {% for message in messages %}
+                            <li class="flash">{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endwith %}
+            <h3>Registered Players</h3>
+            <ul class="player-list">
+                {% for player in players %}
+                    <li class="player-item">
+                        <span>{{ player.username }}</span>
+                        {% if player.username != current_player.username %}
+                            <form method="POST" action="{{ url_for('challenge_player', player_id=player.player_id) }}">
+                                <button type="submit" class="btn">Challenge</button>
+                            </form>
+                        {% else %}
+                            <span class="self-label">You</span>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <h3>Your Ongoing Challenges</h3>
+            <ul class="challenge-list">
+                {% for challenge in ongoing_challenges %}
+                    <li class="challenge-item">
+                        <span>Challenge ID: {{ challenge.challenge_id }} - Status: {{ challenge.status }}</span>
+                        <form method="POST" action="{{ url_for('respond_to_challenge', challenge_id=challenge.challenge_id) }}">
+                            <button type="submit" name="response" value="accept" class="btn">Accept</button>
+                            <button type="submit" name="response" value="decline" class="btn">Decline</button>
+                        </form>
+                    </li>
+                {% endfor %}
+                {% if not ongoing_challenges %}
+                    <li class="no-challenges">You have no ongoing challenges.</li>
+                {% endif %}
+            </ul>
+            <a href="{{ url_for('logout') }}" class="btn logout-btn">Logout</a>
+        </div>
+    </div>
+</body>
+</html>
