@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="card profile-card">
+            <h2>Player Profile</h2>
+
+            <table class="profile-table">
+                <tr>
+                    <td><strong>Username</strong></td>
+                    <td>{{ player.username }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Rating</strong></td>
+                    <td>{{ player.rating }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Lowest Rating</strong></td>
+                    <td>{{ player.lowest_rating }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Highest Rating</strong></td>
+                    <td>{{ player.highest_rating }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Games Played</strong></td>
+                    <td>{{ player.games_played }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Current Streak</strong></td>
+                    <td>{{ player.streak }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Longest Streak</strong></td>
+                    <td>{{ player.longest_streak }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Total Wins</strong></td>
+                    <td>{{ player.total_wins }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Total Losses</strong></td>
+                    <td>{{ player.total_losses }}</td>
+                </tr>
+            </table>
+
+            <a href="{{ url_for('challenge') }}" class="btn back-btn">Back to Challenges</a>
+        </div>
+    </div>
+
+    <style>
+        /* Styling for the profile table */
+        .profile-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1em;
+        }
+        .profile-table td {
+            padding: 0.5em;
+            border-bottom: 1px solid #ddd;
+        }
+        .profile-table td:first-child {
+            font-weight: bold;
+            color: #555;
+        }
+        .back-btn {
+            display: block;
+            margin: 1em 0;
+            background-color: #3498db;
+            color: #fff;
+            text-align: center;
+            padding: 0.5em 0;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+    </style>
+</body>
+</html>

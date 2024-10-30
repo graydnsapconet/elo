@@ -10,7 +10,13 @@
 <body>
     <div class="container">
         <div class="card">
+            <!-- Profile Button -->
+            <div class="profile-button-container">
+                <a href="{{ url_for('player_profile') }}" class="btn profile-btn">My Profile</a>
+            </div>
             <h2>Challenge Players</h2>
+
+            <!-- Flash Messages -->
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
                     <ul class="flash-messages">
@@ -20,39 +26,130 @@
                     </ul>
                 {% endif %}
             {% endwith %}
-            <h3>Registered Players</h3>
-            <ul class="player-list">
-                {% for player in players %}
-                    <li class="player-item">
-                        <span>{{ player.username }}</span>
-                        {% if player.username != current_player.username %}
-                            <form method="POST" action="{{ url_for('challenge_player', player_id=player.player_id) }}">
-                                <button type="submit" class="btn">Challenge</button>
-                            </form>
-                        {% else %}
-                            <span class="self-label">You</span>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
 
-            <h3>Your Ongoing Challenges</h3>
-            <ul class="challenge-list">
-                {% for challenge in ongoing_challenges %}
-                    <li class="challenge-item">
-                        <span>Challenge ID: {{ challenge.challenge_id }} - Status: {{ challenge.status }}</span>
-                        <form method="POST" action="{{ url_for('respond_to_challenge', challenge_id=challenge.challenge_id) }}">
-                            <button type="submit" name="response" value="accept" class="btn">Accept</button>
-                            <button type="submit" name="response" value="decline" class="btn">Decline</button>
-                        </form>
-                    </li>
-                {% endfor %}
-                {% if not ongoing_challenges %}
-                    <li class="no-challenges">You have no ongoing challenges.</li>
-                {% endif %}
-            </ul>
+            <!-- Registered Players List -->
+            <section>
+                <h3>Registered Players</h3>
+                <ul class="player-list">
+                    {% for player in players %}
+                        <li class="player-item">
+                            <span>{{ player.username }}</span>
+                            {% if player.username != current_player.username %}
+                                <form method="POST" action="{{ url_for('challenge_player', player_id=player.player_id) }}">
+                                    <button type="submit" class="btn challenge-btn">Challenge</button>
+                                </form>
+                            {% else %}
+                                <span class="self-label">You</span>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+
+            <!-- Ongoing Challenges List -->
+            <section>
+                <h3>Incoming Challenges</h3>
+                <ul class="challenge-list">
+                    {% for challenge in ongoing_challenges %}
+                        <li class="challenge-item">
+                            <div class="challenge-info">
+                                <span>Challenger: {{ challenge.challenger }} - Status: {{ challenge.status }}</span>
+                            </div>
+                            <div class="challenge-actions">
+                                <form method="POST" action="{{ url_for('respond_to_challenge', challenge_id=challenge.challenge_id) }}">
+                                    <button type="submit" name="response" value="accept" class="btn accept-btn">Accept</button>
+                                    <button type="submit" name="response" value="decline" class="btn decline-btn">Decline</button>
+                                </form>
+                                {% if challenge.status == 'accepted' %}
+                                    <button onclick="openFinishModal({{ challenge.challenge_id }})" class="btn finish-btn">Finish</button>
+                                {% endif %}
+                            </div>
+                        </li>
+                    {% endfor %}
+                    {% if not ongoing_challenges %}
+                        <li class="no-challenges">You have no incoming challenges.</li>
+                    {% endif %}
+                </ul>
+            </section>
+
+            <!-- Logout Button -->
             <a href="{{ url_for('logout') }}" class="btn logout-btn">Logout</a>
         </div>
     </div>
+
+    <!-- Finish Challenge Modal -->
+    <div id="finishModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>Log Game Result</h3>
+            <p>Enter the result for this challenge:</p>
+            <form id="finishForm" onsubmit="submitResult(event)">
+                <input type="hidden" name="challenge_id" id="challenge_id" value="">
+                <label for="result">Result:</label>
+                <select name="result" id="result">
+                    <option value="0">Opponent Won</option>
+                    <option value="1">You Won</option>
+                    <option value="2">Draw</option>
+                </select>
+                <button type="submit" class="btn confirm-btn">Confirm</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Open modal for finishing a challenge
+        function openFinishModal(challengeId) {
+            document.getElementById('challenge_id').value = challengeId;
+            document.getElementById('finishModal').style.display = 'flex';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('finishModal').style.display = 'none';
+        }
+
+        // Submit result with JSON to avoid Content-Type issues
+        async function submitResult(event) {
+            event.preventDefault();
+            const challengeId = document.getElementById('challenge_id').value;
+            const result = document.getElementById('result').value;
+            const response = await fetch('/log_game', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ challenge_id: challengeId, result: result })
+            });
+
+            if (response.ok) {
+                alert('Result logged successfully');
+                closeModal();
+                location.reload();
+            } else {
+                alert('Error logging result. Please try again.');
+            }
+        }
+    </script>
+
+    <style>
+        /* Mobile-friendly and PWA styling */
+        body, html { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
+        .container { max-width: 600px; margin: auto; padding: 1em; }
+        .card { background: #ffffff; padding: 1.5em; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); }
+        h2, h3 { color: #333333; }
+        .flash-messages { padding: 0; list-style: none; margin-bottom: 1em; }
+        .flash { color: #e74c3c; }
+        .player-list, .challenge-list { list-style: none; padding: 0; }
+        .player-item, .challenge-item { display: flex; justify-content: space-between; align-items: center; margin: 0.5em 0; }
+        .btn { padding: 0.5em 1em; cursor: pointer; border: none; border-radius: 4px; color: #ffffff; }
+        .challenge-btn { background-color: #3498db; }
+        .accept-btn { background-color: #2ecc71; }
+        .decline-btn { background-color: #e74c3c; }
+        .finish-btn { background-color: #f39c12; }
+        .logout-btn { display: inline-block; width: 100%; background-color: #e74c3c; text-align: center; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
+        .modal-content { background: #ffffff; padding: 1.5em; border-radius: 8px; width: 90%; max-width: 400px; position: relative; }
+        .close { position: absolute; top: 10px; right: 10px; font-size: 1.5em; cursor: pointer; }
+        .profile-button-container { text-align: center; margin-bottom: 1em; }
+        .profile-btn { background-color: #3498db; color: #fff; padding: 0.5em 1em; border-radius: 4px; text-decoration: none; }
+    </style>
 </body>
 </html>
